@@ -4,13 +4,13 @@ class DatasetSpec:
     """
     Data model for specifications of an image dataset.
     """
-    def __init__(self, overlap, sidelap, height, scan_dimension_x, scan_dimension_y, exposure_time_m):
+    def __init__(self, overlap: float, sidelap: float, height: float, scan_dimension_x: int, scan_dimension_y: int, exposure_time_ms: float):
         self.overlap = overlap
         self.sidelap = sidelap
         self.height = height 
         self.scan_dimension_x = scan_dimension_x
         self.scan_dimension_y = scan_dimension_y
-        self.exposure_time_m = exposure_time_m
+        self.exposure_time_ms = exposure_time_ms
     pass
 
 
@@ -31,15 +31,3 @@ class Waypoint:
     """
     pass
 
-# Model the nomimal dataset spec
-
-overlap = 0.7
-sidelap = 0.7
-height = 30.48 # 100 ft
-scan_dimension_x = 150
-scan_dimension_y = 150
-exposure_time_ms = 2 # 1/500 exposure time
-
-dataset_spec = DatasetSpec(overlap, sidelap, height, scan_dimension_x, scan_dimension_y, exposure_time_ms)
-
-print(f"Nominal specs: {dataset_spec}")
