@@ -115,6 +115,10 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+#Jupyter Files
+share/
+etc/
+
 # IPython
 profile_default/
 ipython_config.py
