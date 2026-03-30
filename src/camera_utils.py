@@ -29,7 +29,17 @@ def project_world_point_to_image(camera: Camera, world_point: tuple[float, float
     Returns:
         (x, y) image coordinates on the film corresponding to world_point (in pixels).
     """
-    raise NotImplementedError()
+    f_x = camera.fx
+    f_y = camera.fy
+
+    X, Y, Z = world_point
+
+    if Z == 0:
+        raise ValueError("Z cannot be zero")
+
+    image_point_x  = f_x * ( X / Z)
+    image_point_y  = f_y * ( Y / Z)
+    return image_point_x, image_point_y
 
 
 def compute_image_footprint_on_surface(
@@ -44,8 +54,9 @@ def compute_image_footprint_on_surface(
     Returns:
         (footprint_x, footprint_y) in meters.
     """
-    raise NotImplementedError()
-
+    X_point3d = distance_from_surface * (camera.num_pixels_x / camera.fx)
+    Y_point3d = distance_from_surface * (camera.num_pixels_y / camera.fy)
+    return X_point3d, Y_point3d
     
 
 
@@ -61,4 +72,5 @@ def compute_ground_sampling_distance(
     Returns:
         The GSD in meters (smaller among x and y directions).
     """
-    raise NotImplementedError()
+    return distance_from_surface / min(camera.fy, camera.fx)
+

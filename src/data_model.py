@@ -22,6 +22,13 @@ class Camera:
     - https://github.com/colmap/colmap/blob/3f75f71310fdec803ab06be84a16cee5032d8e0d/src/colmap/sensor/models.h#L220
     - https://en.wikipedia.org/wiki/Pinhole_camera_model
     """
+    def __init__(self, fx: float, fy: float, sensor_size_x_mm: float, sensor_size_y_mm: float, num_pixels_x: int, num_pixels_y: int):
+        self.fx = fx
+        self.fy = fy
+        self.sensor_size_x_mm = sensor_size_x_mm
+        self.sensor_size_y_mm = sensor_size_y_mm
+        self.num_pixels_x = num_pixels_x
+        self.num_pixels_y = num_pixels_y
     pass
 
 
