@@ -72,5 +72,5 @@ def compute_ground_sampling_distance(
     Returns:
         The GSD in meters (smaller among x and y directions).
     """
-    return (distance_from_surface * (camera.num_pixels_y / camera.fy)) / camera.num_pixels_y
+    return distance_from_surface / min(camera.fy, camera.fx)
 
