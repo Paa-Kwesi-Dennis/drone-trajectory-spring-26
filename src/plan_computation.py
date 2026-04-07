@@ -1,5 +1,6 @@
 import typing as T
 import math
+import numpy as np
 
 from src.data_model import Camera, DatasetSpec, Waypoint
 from src.camera_utils import (
@@ -20,8 +21,25 @@ def compute_distance_between_images(
     Returns:
         The horizontal and vertical distance between images (in meters).
     """
-    raise NotImplementedError()
+    height = dataset_spec.height
+    theta = dataset_spec.camera_angle
 
+    fov_x = np.pi / 2  # use actual camera FOV
+    alpha = fov_x / 2
+
+    if np.isclose(theta, np.pi / 2):  # nadir (straight down)
+        footprint_x, footprint_y = compute_image_footprint_on_surface(camera, height)
+    else:
+        near_x = height * np.tan(theta - alpha)
+        far_x  = height * np.tan(theta + alpha)
+        footprint_x = abs(far_x - near_x)  # abs for safety
+        footprint_y = compute_image_footprint_on_surface(camera, height)[1]
+
+    distance_x = footprint_x * (1 - dataset_spec.overlap)
+    distance_y = footprint_y * (1 - dataset_spec.sidelap)
+
+    return np.array([distance_x, distance_y], dtype=np.float32)
+    
 
 def compute_speed_during_photo_capture(
     camera: Camera, dataset_spec: DatasetSpec, allowed_movement_px: float = 1
@@ -36,7 +54,8 @@ def compute_speed_during_photo_capture(
     Returns:
         The speed at which the drone should move during photo capture.
     """
-    raise NotImplementedError()
+    distance = compute_ground_sampling_distance(camera, dataset_spec.height)
+    return distance / (dataset_spec.exposure_time_ms/1000)
 
 
 def generate_photo_plan_on_grid(
