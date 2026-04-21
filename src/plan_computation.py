@@ -71,4 +71,54 @@ def generate_photo_plan_on_grid(
         Scan plan as a list of waypoints.
 
     """
-    raise NotImplementedError()
+    dist_x, dist_y = compute_distance_between_images(camera, dataset_spec)
+    
+    area_x = dataset_spec.scan_dimension_x  # total width of scan area
+    area_y = dataset_spec.scan_dimension_y  # total height of scan area
+    height  = dataset_spec.height
+    speed   = compute_speed_during_photo_capture(camera, dataset_spec, allowed_movement_px=1)
+
+    # Number of images needed to cover the area (ceil ensures full coverage)
+    n_x = math.ceil(area_x / dist_x) + 1
+    n_y = math.ceil(area_y / dist_y) + 1
+
+    # Recompute actual spacing so images are evenly distributed
+    spacing_x = area_x / (n_x - 1) if n_x > 1 else 0
+    spacing_y = area_y / (n_y - 1) if n_y > 1 else 0
+
+    waypoints = []
+    for j in range(n_y):
+        row = range(n_x) if j % 2 == 0 else range(n_x - 1, -1, -1)
+        for i in row:
+            waypoints.append(Waypoint(x_coordinate=i * spacing_x, y_coordinate=j * spacing_y, z_coordinate=height))
+
+    return waypoints
+
+
+def time_computation(
+    camera: Camera, dataset_spec: DatasetSpec, distance: float
+) -> float:
+
+    s_max = 16
+    s_blur = compute_speed_during_photo_capture(camera, dataset_spec, allowed_movement_px=1)
+    max_acceleration = 3.5
+    t_acc = (s_max-s_blur) / max_acceleration
+    d_1 = 0.5 * t_acc * (s_max - s_blur) + t_acc * s_blur
+    if 2 * d_1 <= distance:
+        # Trapezoidal: drone reaches s_max
+        d_2 = distance - 2 * d_1
+        t_const = d_2 / s_max
+        return 2 * t_acc + t_const
+    else:
+        # Triangular: drone never reaches s_max, find actual s_peak
+        t_acc_tri = (s_max - s_blur) / max_acceleration
+        return 2 * t_acc_tri
+
+def compute_total_time(camera: Camera, dataset_spec: DatasetSpec, waypoints: list[Waypoint]) -> float:
+    total_time = 0.0
+    for i in range(len(waypoints) - 1):
+        wp1, wp2 = waypoints[i], waypoints[i + 1]
+        dist = np.sqrt((wp2.x_coordinate - wp1.x_coordinate)**2 + (wp2.y_coordinate - wp1.y_coordinate)**2)
+        if not np.isclose(dist, 0.0):
+            total_time += time_computation(camera, dataset_spec, dist)
+    return total_time
